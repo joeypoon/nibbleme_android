@@ -1,11 +1,14 @@
 package me.nibble.nibble;
 
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -48,7 +51,12 @@ public class MenuFeedActivity extends AppCompatActivity {
         new AsyncHttpTask().execute(url);
     }
 
-    public class AsyncHttpTask extends AsyncTask<String, Void, Integer> {
+    public void updateUI() {
+        RecyclerViewAdapter adapter = new RecyclerViewAdapter(MenuFeedActivity.this, feedsList);
+        mRecyclerView.setAdapter(adapter);
+    }
+
+    public class AsyncHttpTask extends AsyncTask<String, Void, String> {
 
         @Override
         protected void onPreExecute() {
@@ -56,10 +64,10 @@ public class MenuFeedActivity extends AppCompatActivity {
         }
 
         @Override
-        protected Integer doInBackground(String... params) {
+        protected String doInBackground(String... params) {
             InputStream inputStream = null;
             HttpURLConnection urlConnection = null;
-            Integer result = 0;
+            String response = "";
             try {
                 // form the java.net.URL object
                 URL url = new URL(params[0]);
@@ -81,31 +89,26 @@ public class MenuFeedActivity extends AppCompatActivity {
                 // 200 represents HTTP OK
                 if (statusCode == 200) {
                     inputStream = new BufferedInputStream(urlConnection.getInputStream());
-                    String response = convertInputStreamToString(inputStream);
-                    parseResult(response);
-                    result = 1; //Success!
-                } else {
-                    result = 0; //Failed to fetch data
+                    response = convertInputStreamToString(inputStream);
                 }
             } catch (Exception e) {
                 Log.d(TAG, e.getLocalizedMessage());
             }
-            return result; //Failed to fetch data
+            return response;
         }
 
         //DEBUGGING ONLY
         String lastStatusCode = "debug failed ;)";
 
         @Override
-        protected void onPostExecute(Integer result) {
+        protected void onPostExecute(String result) {
             //Download complete. Let's update UI
             progressBar.setVisibility(View.GONE);
 
-            if (result == 1) {
-                RecyclerViewAdapter adapter = new RecyclerViewAdapter(MenuFeedActivity.this, feedsList);
-                mRecyclerView.setAdapter(adapter);
+            if (lastStatusCode.equals(String.valueOf(200))) {
+                parseResult(result);
             } else {
-                Toast.makeText(MenuFeedActivity.this, ("Failed to fetch data. Status code: " + lastStatusCode), Toast.LENGTH_SHORT).show();
+                cheersToDebugging("Failed to fetch data. Status code: " + lastStatusCode);
             }
         }
 
@@ -129,36 +132,22 @@ public class MenuFeedActivity extends AppCompatActivity {
     private void parseResult(String result) {
         try {
             JSONObject response = new JSONObject(result);
-            JSONArray products = response.optJSONArray("products");
+            JSONArray products = response.optJSONArray("users");
             feedsList = new ArrayList<>();
 
             for(int i = 0; i < products.length(); i++) {
                 JSONObject product = products.optJSONObject(i);
                 feedsList.add(new FeedItem(product.optString("name")));
             }
+            updateUI();
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-//    private void parseResult(String result) {
-//        try {
-//            JSONObject response = new JSONObject(result);
-//            JSONArray posts = response.optJSONArray("posts");
-//            feedsList = new ArrayList<>();
-//
-//            for (int i = 0; i < posts.length(); i++) {
-//                JSONObject post = posts.optJSONObject(i);
-//                FeedItem item = new FeedItem();
-//                item.setTitle(post.optString("title"));
-//                item.setThumbnail(post.optString("thumbnail"));
-//
-//                feedsList.add(item);
-//            }
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-//    }
+    private void cheersToDebugging(String msg) {
+        Toast.makeText(MenuFeedActivity.this, msg, Toast.LENGTH_SHORT).show();
+    }
 }
 
 
