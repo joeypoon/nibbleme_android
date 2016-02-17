@@ -3,12 +3,15 @@ package me.nibble.nibble;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -28,16 +31,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class MenuFeedActivity extends AppCompatActivity {
+public class MenuFeedActivity extends ActionBarActivity {
     private static final String TAG = "Local Bites";
     private List<FeedItem> feedsList;
     private RecyclerView mRecyclerView;
     private ProgressBar progressBar;
+    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu_feed);
+
+        //Init toolbar
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         //Init recycler view
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
@@ -51,7 +59,29 @@ public class MenuFeedActivity extends AppCompatActivity {
         new AsyncHttpTask().execute(url);
     }
 
-    public void updateUI() {
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        //Inflate the menu; adds items to the action bar if present.
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        //Handle action bar item clicks. It will automatically
+        //handle clicks on the home/up button, as long as a
+        //parent activity is specified in AndroidManifest.xml
+        int id = item.getItemId();
+
+        //noinspection Simplifiable if staement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void updateUI() {
         RecyclerViewAdapter adapter = new RecyclerViewAdapter(MenuFeedActivity.this, feedsList);
         mRecyclerView.setAdapter(adapter);
     }

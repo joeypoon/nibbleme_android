@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Nibble</string>
     <string name="json_host">http://nibbleme.herokuapp.com/users</string>
+    <string name="action_settings">Nibble Settings</string>
 </resources>

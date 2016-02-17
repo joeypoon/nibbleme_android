@@ -1,15 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="@dimen/activity_vertical_margin">
+    android:padding="0dp"
+    tools:context=".MainActivity">
 
-    <view
+    <include android:id="@+id/toolbar"
+        layout="@layout/toolbar" />
+
+    <view class="android.support.v7.widget.RecyclerView"
         android:id="@+id/recycler_view"
-        class="android.support.v7.widget.RecyclerView"
+        android:layout_below="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_centerInParent="true" />
+        android:layout_centerInParent="true"/>
 
     <ProgressBar
         android:id="@+id/progress_bar"
