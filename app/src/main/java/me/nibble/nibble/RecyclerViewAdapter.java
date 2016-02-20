@@ -39,18 +39,20 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         FeedItem feedItem = feedItems.get(i);
 
         //Download image using picasso library
-//        Picasso.with(mContext).load(feedItem.getThumbnail())
-//                .error(R.drawable.snack)
-//                .placeholder(R.drawable.snack)
-//                .into(customViewHolder.imageView);
+        Picasso.with(mContext).load(feedItem.getThumbnail())
+                .error(R.drawable.snack)
+                .placeholder(R.drawable.snack)
+                .into(customViewHolder.imageView);
 
         //Setting text view title
         customViewHolder.textView.setText(Html.fromHtml(feedItem.getTitle()));
 
         //Handle click event on both title and image click
         customViewHolder.textView.setOnClickListener(clickListener);
+        customViewHolder.imageView.setOnClickListener(clickListener);
 
         customViewHolder.textView.setTag(customViewHolder);
+        customViewHolder.imageView.setTag(customViewHolder);
     }
 
     @Override
@@ -59,11 +61,12 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     }
 
     public class CustomViewHolder extends RecyclerView.ViewHolder {
-//        protected ImageView imageView;
+        protected ImageView imageView;
         protected TextView textView;
 
         public CustomViewHolder(View view) {
             super(view);
+//            this.imageView = (ImageView) view.findViewById(R.id.thumbnail);
             this.textView = (TextView) view.findViewById(R.id.title);
         }
     }

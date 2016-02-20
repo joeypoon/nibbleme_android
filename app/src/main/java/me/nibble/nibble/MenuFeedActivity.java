@@ -86,7 +86,8 @@ public class MenuFeedActivity extends ActionBarActivity {
         mRecyclerView.setAdapter(adapter);
     }
 
-    public class AsyncHttpTask extends AsyncTask<String, Void, String> {
+
+    public class AsyncHttpTask extends AsyncTask<String, Void, Integer> {
 
         @Override
         protected void onPreExecute() {
@@ -94,10 +95,10 @@ public class MenuFeedActivity extends ActionBarActivity {
         }
 
         @Override
-        protected String doInBackground(String... params) {
+        protected Integer doInBackground(String... params) {
             InputStream inputStream = null;
             HttpURLConnection urlConnection = null;
-            String response = "";
+            Integer result = 0;
             try {
                 // form the java.net.URL object
                 URL url = new URL(params[0]);
@@ -119,26 +120,31 @@ public class MenuFeedActivity extends ActionBarActivity {
                 // 200 represents HTTP OK
                 if (statusCode == 200) {
                     inputStream = new BufferedInputStream(urlConnection.getInputStream());
-                    response = convertInputStreamToString(inputStream);
+                    String response = convertInputStreamToString(inputStream);
+                    parseResult(response);
+                    result = 1; //Success!
+                } else {
+                    result = 0; //Failed to fetch data
                 }
             } catch (Exception e) {
                 Log.d(TAG, e.getLocalizedMessage());
             }
-            return response;
+            return result; //Failed to fetch data
         }
 
         //DEBUGGING ONLY
         String lastStatusCode = "debug failed ;)";
 
         @Override
-        protected void onPostExecute(String result) {
+        protected void onPostExecute(Integer result) {
             //Download complete. Let's update UI
             progressBar.setVisibility(View.GONE);
 
-            if (lastStatusCode.equals(String.valueOf(200))) {
-                parseResult(result);
+            if (result == 1) {
+                RecyclerViewAdapter adapter = new RecyclerViewAdapter(MenuFeedActivity.this, feedsList);
+                mRecyclerView.setAdapter(adapter);
             } else {
-                cheersToDebugging("Failed to fetch data. Status code: " + lastStatusCode);
+                Toast.makeText(MenuFeedActivity.this, ("Failed to fetch data. Status code: " + lastStatusCode), Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -162,22 +168,36 @@ public class MenuFeedActivity extends ActionBarActivity {
     private void parseResult(String result) {
         try {
             JSONObject response = new JSONObject(result);
-            JSONArray products = response.optJSONArray("users");
+            JSONArray products = response.optJSONArray("products");
             feedsList = new ArrayList<>();
 
             for(int i = 0; i < products.length(); i++) {
                 JSONObject product = products.optJSONObject(i);
                 feedsList.add(new FeedItem(product.optString("name")));
             }
-            updateUI();
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    private void cheersToDebugging(String msg) {
-        Toast.makeText(MenuFeedActivity.this, msg, Toast.LENGTH_SHORT).show();
-    }
+//    private void parseResult(String result) {
+//        try {
+//            JSONObject response = new JSONObject(result);
+//            JSONArray posts = response.optJSONArray("posts");
+//            feedsList = new ArrayList<>();
+//
+//            for (int i = 0; i < posts.length(); i++) {
+//                JSONObject post = posts.optJSONObject(i);
+//                FeedItem item = new FeedItem();
+//                item.setTitle(post.optString("title"));
+//                item.setThumbnail(post.optString("thumbnail"));
+//
+//                feedsList.add(item);
+//            }
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//    }
 }
 
 
